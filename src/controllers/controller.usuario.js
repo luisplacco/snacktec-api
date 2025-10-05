@@ -1,8 +1,9 @@
 import serviceUsuario from '../services/service.usuario.js';
 
+
 async function Favoritos(req, res){
     try{
-        const id_usuario = 1;
+        const id_usuario = req.id_usuario; 
         const favoritos = await serviceUsuario.Favoritos(id_usuario);
         res.status(200).json(favoritos);
     } catch (error) {
@@ -15,35 +16,46 @@ async function Login  (req, res)  {
 
   //  const email = req.body.email;
 //    const senha = req.body.senha;
-    const {email, senha} = req.body;
-    if (email == "teste@teste.com" && senha == "123456") {
+    const {ra, senha} = req.body;
     
-        res.status(200).json({ 
-            id_usuario: 1,
-            email: "luis@placco.com",
-            nome: "luis",
-    
-        });
-    
+    const usuario = await serviceUsuario.Login(ra, senha);
+
+    if (usuario.length === 0){
+        res.status(401).json({error: "Usuário ou senha inválidos"});
+         console.log("RA recebido:", ra);
+        console.log("Senha recebida:", senha);
+    }else 
+            res.status(200).json(usuario);
+
+        
     }
-    else{
-        res.status(401).json({ 
-            error: "Email ou senha inválidos",
-        });
-    }
-}
 
     async function Inserir (req, res) {
 
-        const {nome, email, senha} = req.body;
+        try{
+            const {nome, email, senha,ra} = req.body;
 
-        res.status(201).json({ 
-            id_usuario: 1,
-            email,
-            nome,
-    
-        });
+                const usuario = await serviceUsuario.Inserir(nome, email, senha,ra);
+
+            // Cria o token JWT para o usuário
+
+                res.status(201).json(usuario);
+            } catch (error) {
+                res.status(500).json({ error: "Erro ao inserir usuário", details: error.message });
+
+            }
             
         }
 
-export default {Favoritos, Login, Inserir};
+
+        async function Perfil(req, res){
+    try{
+        const id_usuario = req.id_usuario; 
+        const usuario = await serviceUsuario.Perfil(id_usuario);
+        res.status(200).json(usuario);
+    } catch (error) {
+        res.status(500).json({error});
+    }
+}
+
+export default {Favoritos, Login, Inserir, Perfil};

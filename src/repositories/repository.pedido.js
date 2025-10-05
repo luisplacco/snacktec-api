@@ -43,5 +43,51 @@ ORDER BY p.ID_PEDIDO DESC;
     return pedido[0]  ;
 }
 
+async function Inserir(pedido) {
+  // 1. Inserir pedido
+  const sqlPedido = `
+    INSERT INTO pedido (id_usuario, status, dt_pedido, vl_total)
+    VALUES (?, 'P', CURRENT_TIMESTAMP, ?)
+  `;
 
-export default {Listar, ListarId};
+  await execute(sqlPedido, [pedido.id_usuario, pedido.vl_total]);
+
+  // 2. Pegar o último ID inserido
+  const sqlLastId = `SELECT last_insert_rowid() AS id_pedido`;
+  const result = await execute(sqlLastId);
+  const id_pedido = result[0].id_pedido;
+
+  // 3. Inserir itens
+  const sqlItem = `
+    INSERT INTO pedido_item (id_pedido, id_produto, qtd, vl_unitario, vl_total, obs)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  for (let item of pedido.itens) {
+    await execute(sqlItem, [
+      id_pedido,
+      item.id_produto,
+      item.qtd,
+      item.vl_unitario,
+      item.vl_total,
+      item.obs || ''
+    ]);
+  }
+
+  pedido.itens.map(async (item) => {
+  const sql = `insert into pedido_item(id_pedido, id_produto, obs, qtd, vl_unitario, vl_total) values(?,?,?,?,?,?)`;
+
+   await execute(sql, [
+     id_pedido,
+     item.id_produto,
+     item.obs || '',
+     item.qtd,
+     item.vl_unitario,
+     item.vl_total
+   ]);
+ });
+
+  return { id_pedido };
+}
+
+export default { Listar, ListarId, Inserir };
