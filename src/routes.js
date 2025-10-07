@@ -2,7 +2,7 @@ import { Router } from "express";
 import controllerCategoria from "./controllers/controller.categoria.js";
 import controllerProduto from "./controllers/controller.produtos.js";
 import controllerProduto_destaque from "./controllers/controller.produto_destaque.js";
-
+import controllerBanner from "./controllers/controller.banner.js";
 import controllerPedido from "./controllers/controller.pedido.js";
 import controllerUsuario from "./controllers/controller.usuario.js";
 
@@ -31,6 +31,7 @@ router.delete("/produtos/:id_produto/favoritos", jwt.ValidateJWT, controllerProd
 router.get("/produtos/:id_produto/cardapio", jwt.ValidateJWT, controllerProduto_destaque.Cardapio);
 
 router.get("/categorias", jwt.ValidateJWT, controllerCategoria.Listar);
+router.get("/banners", jwt.ValidateJWT, controllerBanner.Listar);
 
 
 export default router;

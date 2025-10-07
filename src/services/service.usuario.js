@@ -23,6 +23,10 @@ async function Inserir(nome, email, senha, ra) {
     const usuario = await repositoryUsuario.Inserir(nome, email, hashSenha, ra);
 
     usuario.token = jwt.CreateJWT(usuario.ID_USUARIO);
+    usuario.nome = nome;
+    usuario.email = email;
+    usuario.ra = ra;
+
 
     return usuario;
 }

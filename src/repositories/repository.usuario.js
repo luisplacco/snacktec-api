@@ -25,8 +25,6 @@ async function Inserir(nome, email, senha, ra) {
   let usuario = await execute(sql, [nome, email, senha, ra]);
     
   
- 
-  
   return usuario[0];
 }
 
