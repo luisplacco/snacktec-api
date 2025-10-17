@@ -6,8 +6,8 @@ async function Listar (){
 
     let sql = `SELECT 
   p.*,
-  (SELECT SUM(QTD) FROM PEDIDO_ITEM pi WHERE pi.ID_PEDIDO = p.ID_PEDIDO) AS QTD_TOTAL_PRODUTOS
-FROM PEDIDO p
+  (SELECT SUM(QTD) FROM PEDIDO_ITEM pi WHERE pi.ID_PEDIDO = p.ID_PEDIDO) AS QTD_TOTAL_PRODUTOS, ps.DESCRICAO as STATUS_DESCRICAO
+FROM PEDIDO p join PEDIDO_STATUS ps on(ps.STATUS = p.STATUS)
 ORDER BY p.ID_PEDIDO DESC;
 
 `;
@@ -45,25 +45,24 @@ ORDER BY p.ID_PEDIDO DESC;
 
 async function Inserir(pedido) {
   // 1. Inserir pedido
-  const sqlPedido = `
-    INSERT INTO pedido (id_usuario, status, dt_pedido, vl_total)
-    VALUES (?, 'P', CURRENT_TIMESTAMP, ?)
-  `;
+  const sqlPedido = `INSERT INTO pedido (id_usuario, status, dt_pedido, vl_total, desconto, subtotal)
+   VALUES (?, 'P', CURRENT_TIMESTAMP, ?, ?, ?)`;
 
-  await execute(sqlPedido, [pedido.id_usuario, pedido.vl_total]);
+
+  await execute(sqlPedido, [pedido.id_usuario, pedido.vl_total, pedido.desconto, pedido.subtotal]);
 
   // 2. Pegar o último ID inserido
   const sqlLastId = `SELECT last_insert_rowid() AS id_pedido`;
   const result = await execute(sqlLastId);
   const id_pedido = result[0].id_pedido;
 
-  // 3. Inserir itens
+  // 3. Inserir itens (APENAS UMA VEZ)
   const sqlItem = `
     INSERT INTO pedido_item (id_pedido, id_produto, qtd, vl_unitario, vl_total, obs)
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
-  for (let item of pedido.itens) {
+  for (let item of pedido.itens || []) {
     await execute(sqlItem, [
       id_pedido,
       item.id_produto,
@@ -74,20 +73,6 @@ async function Inserir(pedido) {
     ]);
   }
 
-  pedido.itens.map(async (item) => {
-  const sql = `insert into pedido_item(id_pedido, id_produto, obs, qtd, vl_unitario, vl_total) values(?,?,?,?,?,?)`;
-
-   await execute(sql, [
-     id_pedido,
-     item.id_produto,
-     item.obs || '',
-     item.qtd,
-     item.vl_unitario,
-     item.vl_total
-   ]);
- });
-
   return { id_pedido };
 }
-
 export default { Listar, ListarId, Inserir };

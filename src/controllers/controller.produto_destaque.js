@@ -11,14 +11,16 @@ async function Destaque(req, res){
 }
 
 
-async function Listar(req, res){
-    try{
-        const id_usuario = req.id_usuario;  // Supondo que o ID do usuário esteja disponível na requisição
+async function Listar(req, res) {
+    try {
+        const id_usuario = req.id_usuario;
         const busca = req.query.busca;
-        const produto_destaque = await serviceProdutoDestaque.Listar(id_usuario, busca);
-        res.status(200).json(produto_destaque);
+        const id_categoria = req.query.id_categoria; // Certifique-se disso!
+        const id_banner = req.query.id_banner;
+        const produtos = await serviceProdutoDestaque.Listar(id_usuario, busca, id_categoria, id_banner);
+        res.status(200).json(produtos);
     } catch (error) {
-        res.status(500).json({error: "Erro ao listar produtos em destaque"});
+        res.status(500).json({ error: "Erro ao listar produtos em destaque" });
     }
 }
 

@@ -25,34 +25,45 @@ ORDER BY d.ordem;
     return produto_destaque;
 }
 
-async function Listar(id_usuario, busca) {
-    let filtro = [id_usuario];
-
+async function Listar(id_usuario, busca, id_categoria, id_banner) {
+    let filtro = [id_usuario]; // Adicione esta linha!
+   
+    
     let sql = `
-        SELECT 
-    e.*, 
-    CASE 
-        WHEN u.id_favorito IS NULL THEN 'N'
-        ELSE 'S'
-    END AS FAVORITO
-FROM produto e
-LEFT JOIN usuario_favorito u 
-    ON u.id_produto = e.id_produto
-   AND u.id_usuario = ?
-ORDER BY e.nome;
-    `;
+    SELECT 
+        e.*, 
+        CASE 
+            WHEN u.id_favorito IS NULL THEN 'N'
+            ELSE 'S'
+        END AS FAVORITO
+    FROM produto e
+    LEFT JOIN usuario_favorito u 
+        ON u.id_produto = e.id_produto
+       AND u.id_usuario = ?
+    WHERE 1=1
+`;
 
-    if (busca) {
-        filtro.push(`%${busca}%`);
-        sql += " WHERE e.nome LIKE ? ";
-    }
+if (busca && busca.trim() !== "") {
+    filtro.push(`%${busca}%`);
+    sql += " AND e.nome LIKE ? ";
+}
 
-    sql += " ORDER BY e.nome;";
+if (id_categoria && id_categoria.trim() !== "") {
+    filtro.push(id_categoria);
+    sql += " AND e.ID_CATEGORIA = ? ";
+}
+
+if (id_banner && id_banner.trim() !== "") {
+    filtro.push(id_banner);
+    sql += " AND e.id_banner = ? ";
+}
+
+sql += " ORDER BY e.nome;";
+
 
     const produto_destaque = await execute(sql, filtro);
     return produto_destaque;
 }
-
 
 async function InserirFavorito (id_usuario,id_produto){
 

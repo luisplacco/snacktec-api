@@ -10,10 +10,10 @@ async function Destaque(id_usuario) {
 }
 
 
-async function Listar(id_usuario,busca) {
+async function Listar(id_usuario,busca, id_categoria, id_banner) {
 
 
-    const produto_destaque = await repositoryProdutoDestaque.Listar(id_usuario, busca);
+    const produto_destaque = await repositoryProdutoDestaque.Listar(id_usuario, busca, id_categoria, id_banner);
 
     return produto_destaque;
 }
