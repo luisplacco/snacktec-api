@@ -9,42 +9,47 @@ async function Favoritos(id_usuario) {
     return favoritos;
 }
 
-async function Inserir(nome, email, senha, ra) {
-    
-    const validarUsuario = await repositoryUsuario.ListarByRa(ra);
+async function Inserir(nome, email, senha, ra /*, tipo removed */) {
+  const validarUsuario = await repositoryUsuario.ListarByRa(ra);
+  if (validarUsuario && (validarUsuario.ID_USUARIO || validarUsuario.id_usuario))
+    throw new Error("ja existe uma conta criada com esse RA");
 
-    if(validarUsuario.id_usuario)
-        throw "ja existe uma conta criada com esse RA";
-    
+  const hashSenha = await bcrypt.hash(senha, 10);
 
+  // força 'aluno' — o cliente não pode escolher admin
+  const tipoFinal = 'aluno';
 
-    const hashSenha = await bcrypt.hash(senha, 10);
-    
-    const usuario = await repositoryUsuario.Inserir(nome, email, hashSenha, ra);
+  const usuario = await repositoryUsuario.Inserir(nome, email, hashSenha, ra, tipoFinal);
 
-    usuario.token = jwt.CreateJWT(usuario.ID_USUARIO);
-    usuario.nome = nome;
-    usuario.email = email;
-    usuario.ra = ra;
-
-
-    return usuario;
+  const idUsuario = usuario.ID_USUARIO ?? usuario.id_usuario;
+  usuario.token = jwt.CreateJWT(idUsuario, tipoFinal);
+  delete usuario.SENHA;
+  return usuario;
 }
 
-async function Login(ra, senha) {
-    const usuario = await repositoryUsuario.ListarByRa(ra);
-    if (usuario.length == 0 )
-        return[];
-    else{
-        if (await bcrypt.compare(senha, usuario.SENHA)) {
+    async function Login(ra, senha) {
+  const usuario = await repositoryUsuario.ListarByRa(ra);
+  console.log("DEBUG Login - usuario do DB:", usuario); // <-- verifique aqui o campo TIPO
 
-            delete usuario.SENHA;
-            usuario.token = jwt.CreateJWT(usuario.ID_USUARIO); // Certifique-se que é 'id_usuario'  // Remove a senha do objeto retornado
-            return usuario;
-        }
-        else
-            return [];
-    }
+  if (!usuario) return [];
+
+  const hash = usuario.SENHA ?? usuario.senha;
+  if (!hash) return [];
+
+  if (await bcrypt.compare(senha, hash)) {
+    // garantir que pegamos o tipo do DB, trim e fallback seguro
+    const tipoUsuarioRaw = usuario.TIPO ?? usuario.tipo ?? '';
+    const tipoUsuario = String(tipoUsuarioRaw).trim() || 'aluno';
+
+    delete usuario.SENHA;
+    delete usuario.senha;
+
+    usuario.token = jwt.CreateJWT(usuario.ID_USUARIO ?? usuario.id_usuario, tipoUsuario);
+    usuario.TIPO = tipoUsuario;
+    return usuario;
+  } else {
+    return [];
+  }
 }
 
 async function Perfil(id_usuario) {

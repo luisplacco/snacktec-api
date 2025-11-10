@@ -1,5 +1,5 @@
 import repositoryProdutos from "../repositories/repository.produtos.js";
-
+import repositoryProdutoDetalhe from "../repositories/repository.produtos.js";
 
 async function Listar() {
 
@@ -9,4 +9,11 @@ async function Listar() {
     return produtos;
 }
 
-export default { Listar };
+async function ListarByProduto(id_produto) {
+    const produto = await repositoryProdutos.ListarByProduto(id_produto);
+    return produto;
+}
+
+
+
+export default { Listar, ListarByProduto };

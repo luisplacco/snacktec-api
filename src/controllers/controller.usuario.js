@@ -31,21 +31,14 @@ async function Login  (req, res)  {
     }
 
     async function Inserir (req, res) {
-
-        try{
-            const {nome, email, senha,ra} = req.body;
-
-                const usuario = await serviceUsuario.Inserir(nome, email, senha,ra);
-
-            // Cria o token JWT para o usuário
-
-                res.status(201).json(usuario);
-            } catch (error) {
-                res.status(500).json({ error: "Erro ao inserir usuário", details: error.message });
-
-            }
-            
-        }
+  try {
+    const { nome, email, senha, ra } = req.body; // não lê tipo do body
+    const usuario = await serviceUsuario.Inserir(nome, email, senha, ra); // sem tipo
+    res.status(201).json(usuario);
+  } catch (err) {
+    // ...existing code...
+  }
+}
 
 
         async function Perfil(req, res){

@@ -13,4 +13,22 @@ async function Listar (){
 }
 
 
-export default {Listar};
+async function ListarByProduto(id_produto) {
+    const sql = `
+        SELECT 
+            ID_PRODUTO,
+            ID_CATEGORIA,
+            NOME,
+            DESCRICAO,
+            PRECO,
+            ICONE,
+            ESTOQUE,
+            ATIVO
+        FROM PRODUTO
+        WHERE ID_PRODUTO = ?
+    `;
+    const resultado = await execute(sql, [Number(id_produto)]);
+    return resultado.length ? resultado[0] : null;
+}
+
+export default { ListarByProduto, Listar };

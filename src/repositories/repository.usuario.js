@@ -20,45 +20,32 @@ WHERE f.ID_USUARIO = ?
     return favoritos;
 }
 
-async function Inserir(nome, email, senha, ra) {
-   const sql = `insert into USUARIO (NOME, EMAIL, SENHA, RA) values (?, ?, ?, ?) returning id_usuario`;
-  let usuario = await execute(sql, [nome, email, senha, ra]);
-    
-  
+async function Inserir(nome, email, senha, ra, tipo) {
+  // usa insert normal e pega last_insert_rowid (mais compatível)
+  const sqlInsert = `INSERT INTO USUARIO (NOME, EMAIL, SENHA, RA, TIPO) VALUES (?, ?, ?, ?, ?)`;
+  await execute(sqlInsert, [nome, email, senha, ra, tipo]);
+
+  // pega id inserido e retorna o usuário completo (incluindo TIPO)
+  const r = await execute(`SELECT last_insert_rowid() AS id`);
+  const id = r[0].id;
+  const usuario = await execute(`SELECT ID_USUARIO, NOME, EMAIL, RA, TIPO FROM USUARIO WHERE ID_USUARIO = ?`, [id]);
   return usuario[0];
 }
 
 
-async function ListarByRa (ra){
+async function ListarByRa(ra){
+  const sql = `SELECT ID_USUARIO, SENHA, NOME, EMAIL, RA, TIPO FROM USUARIO WHERE RA = ?`;
+  const usuarios = await execute(sql, [ra]);
+  if (!usuarios || usuarios.length === 0) return null;
+  return usuarios[0];
+}
 
-
-    let sql = `SELECT id_usuario, senha, nome,email,ra FROM USUARIO WHERE RA = ?`;
-
-
-   const usuarios =  await execute(sql, [ra]);
-
-    if (usuarios.length ==0)
-      return[];
-    else
-      return usuarios[0];
-
-    }
-
-
-    async function ListarById (id_usuario){
-
-
-    let sql = `SELECT id_usuario, nome,email,ra FROM USUARIO WHERE id_usuario = ?`;
-
-
-   const usuarios =  await execute(sql, [id_usuario]);
-
-    if (usuarios.length ==0)
-      return[];
-    else
-      return usuarios[0];
-
-    }
+async function ListarById(id_usuario){
+  const sql = `SELECT ID_USUARIO, NOME, EMAIL, RA, TIPO FROM USUARIO WHERE ID_USUARIO = ?`;
+  const usuarios = await execute(sql, [id_usuario]);
+  if (!usuarios || usuarios.length === 0) return null;
+  return usuarios[0];
+}
 
 
 export default {Favoritos, Inserir, ListarByRa,ListarById};
