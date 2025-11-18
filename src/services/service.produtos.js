@@ -14,6 +14,16 @@ async function ListarByProduto(id_produto) {
     return produto;
 }
 
+async function Inserir(dados) {
+    return await repositoryProdutos.Inserir(dados);
+}
 
+async function Atualizar(id_produto, dados) {
+    return await repositoryProdutos.Atualizar(id_produto, dados);
+}
 
-export default { Listar, ListarByProduto };
+async function Excluir(id_produto) {
+    return await repositoryProdutos.Excluir(id_produto);
+}
+
+export default { Listar, ListarByProduto, Inserir, Atualizar, Excluir };

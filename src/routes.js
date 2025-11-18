@@ -5,6 +5,7 @@ import controllerProduto_destaque from "./controllers/controller.produto_destaqu
 import controllerBanner from "./controllers/controller.banner.js";
 import controllerPedido from "./controllers/controller.pedido.js";
 import controllerUsuario from "./controllers/controller.usuario.js";
+import controllerChat from "./controllers/controller.chat.js";
 import adminOnly from "./middlewares/adminOnly.js";
 
 
@@ -40,9 +41,24 @@ router.get("/banners", jwt.ValidateJWT, controllerBanner.Listar);
 // listar itens do pedido
 router.get("/pedidos/:id_pedido/itens", jwt.ValidateJWT, controllerPedido.ListarItensByPedido);
 
+// chat - rotas para alunos
+router.get("/chat", jwt.ValidateJWT, controllerChat.ListarMensagens);
+router.post("/chat", jwt.ValidateJWT, controllerChat.EnviarMensagem);
+
 // rotas admin (sem autenticação)
 router.get("/admin/pedidos", controllerPedido.ListarTodos);
 router.get("/admin/pedidos/:id_pedido/itens", controllerPedido.ListarItensByPedido);
 router.put("/admin/pedidos/:id_pedido/status", controllerPedido.AtualizarStatus);
+
+// produtos - rotas admin
+router.get("/admin/produtos", controllerProduto.Listar);
+router.post("/admin/produtos", controllerProduto.Inserir);
+router.put("/admin/produtos/:id_produto", controllerProduto.Atualizar);
+router.delete("/admin/produtos/:id_produto", controllerProduto.Excluir);
+
+// chat - rotas para admin
+router.get("/admin/chat", controllerChat.ListarConversas);
+router.get("/admin/chat/:id_usuario", controllerChat.ListarConversa);
+router.post("/admin/chat", controllerChat.ResponderMensagem);
 
 export default router;
